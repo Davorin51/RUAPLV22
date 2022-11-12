@@ -8,9 +8,26 @@ namespace ContactManager.Services
 {
     public class ContactRepository
     {
-
-
         private const string CacheKey = "ContactStore";
+
+        public Contact[] GetAllContacts()
+        {
+            var ctx = HttpContext.Current;
+
+            if (ctx != null)
+            {
+                return (Contact[])ctx.Cache[CacheKey];
+            }
+
+            return new Contact[]
+                {
+            new Contact
+            {
+                Id = 0,
+                Name = "Placeholder"
+            }
+                };
+        }
 
         public ContactRepository()
         {
@@ -37,47 +54,29 @@ namespace ContactManager.Services
             }
         }
 
-        public Contact[] GetAllContacts()
-{
-    var ctx = HttpContext.Current;
-
-    if (ctx != null)
-    {
-        return (Contact[])ctx.Cache[CacheKey];
-    }
-
-    return new Contact[]
+        public bool SaveContact(Contact contact)
         {
-            new Contact
+            var ctx = HttpContext.Current;
+
+            if (ctx != null)
             {
-                Id = 0,
-                Name = "Placeholder"
+                try
+                {
+                    var currentData = ((Contact[])ctx.Cache[CacheKey]).ToList();
+                    currentData.Add(contact);
+                    ctx.Cache[CacheKey] = currentData.ToArray();
+
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.ToString());
+                    return false;
+                }
             }
-        };
-}
 
-public bool SaveContact(Contact contact)
-{
-    var ctx = HttpContext.Current;
-
-    if (ctx != null)
-    {
-        try
-        {
-            var currentData = ((Contact[])ctx.Cache[CacheKey]).ToList();
-            currentData.Add(contact);
-            ctx.Cache[CacheKey] = currentData.ToArray();
-
-            return true;
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine(ex.ToString());
             return false;
         }
-    }
 
-    return false;
-}
     }
 }
